@@ -7,10 +7,9 @@ import {
 } from '../types';
 import * as vscode from 'vscode';
 import { extensionName } from '../const';
+import { shouldProcessFile } from '../utils/FileFilter';
 
-const config = vscode.workspace
-    .getConfiguration()
-    .get(extensionName) as Settings;
+// Remove static config, we'll get it dynamically
 
 export async function openAllFiles(
     uri: vscode.Uri,
@@ -18,6 +17,11 @@ export async function openAllFiles(
     depth = 0,
     fileCount = 0,
 ) {
+    // Get fresh config every time
+    const config = vscode.workspace
+        .getConfiguration()
+        .get(extensionName) as Settings;
+    
     if (depth > config.maxRecursiveDepth) {
         // vscode.window.showErrorMessage(`config.maxRecursiveDepth`);
         console.log(
@@ -53,8 +57,19 @@ const createOnReadDirectoryFulfilled = (
     fileCount = 0,
 ): ReadDirectoryFulfilled => {
     return (files) => {
+        // Get fresh config every time
+        const config = vscode.workspace
+            .getConfiguration()
+            .get(extensionName) as Settings;
+            
         for (let [fileName, fileType] of files) {
             const filePath = vscode.Uri.joinPath(uri, fileName);
+
+            // Check if file/directory should be processed (not excluded)
+            if (!shouldProcessFile(fileName, fileType, config.excludeFolders, config.excludeExtensions)) {
+                console.log(`Excluding ${fileType === vscode.FileType.Directory ? 'directory' : 'file'}: ${fileName}`);
+                continue;
+            }
 
             if (fileType === vscode.FileType.Directory && recursive) {
                 openAllFiles(filePath, true, ++depth, ++fileCount);

@@ -74,6 +74,28 @@
                     "type": "number",
                     "default": 50,
                     "description": "Maximum number of files to open in one action."
+                },
+                "vscode-open-files-in-directory.excludeFolders": {
+                    "type": "array",
+                    "default": [
+                        "node_modules",
+                        "out",
+                        "generated",
+                        "dist",
+                        "coverage",
+                        "build",
+                        ".git",
+                        ".husky",
+                        ".next",
+                        ".source",
+                        ".turbo"
+                    ],
+                    "description": "Folders to exclude when opening files in directory."
+                },
+                "vscode-open-files-in-directory.excludeExtensions": {
+                    "type": "array",
+                    "default": [".svg"],
+                    "description": "File extensions to exclude when opening files in directory."
                 }
             }
         }
