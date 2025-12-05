@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-const FOLDER_CONFIG_FILE = 'folder.json';
+const FOLDER_CONFIG_FILE = 'folder.jsonc';
 const VSCODE_FOLDER = '.vscode';
 
 /**
@@ -32,16 +32,31 @@ export function normalizeFolderPath(
 }
 
 /**
- * Get the path to the folder.json config file
+ * Get the path to the folder.jsonc config file
  * @param workspaceFolder - The workspace folder
- * @returns URI to the folder.json file
+ * @returns URI to the folder.jsonc file
  */
 function getConfigFilePath(workspaceFolder: vscode.WorkspaceFolder): vscode.Uri {
     return vscode.Uri.joinPath(workspaceFolder.uri, VSCODE_FOLDER, FOLDER_CONFIG_FILE);
 }
 
 /**
- * Read disabled folders from .vscode/folder.json
+ * Strip comments from JSONC content
+ * @param content - JSONC content string
+ * @returns JSON content without comments
+ */
+function stripJsonComments(content: string): string {
+    // Remove single-line comments (// ...)
+    content = content.replace(/\/\/.*$/gm, '');
+    
+    // Remove multi-line comments (/* ... */)
+    content = content.replace(/\/\*[\s\S]*?\*\//g, '');
+    
+    return content.trim();
+}
+
+/**
+ * Read disabled folders from .vscode/folder.jsonc
  * @param workspaceFolder - The workspace folder
  * @returns Array of disabled folder paths
  */
@@ -53,7 +68,9 @@ export async function readDisabledFolders(
     try {
         const data = await vscode.workspace.fs.readFile(configUri);
         const content = Buffer.from(data).toString('utf-8');
-        const folders = JSON.parse(content);
+        // Strip comments from JSONC before parsing
+        const jsonContent = stripJsonComments(content);
+        const folders = JSON.parse(jsonContent);
         
         // Validate that it's an array
         if (Array.isArray(folders)) {
@@ -69,7 +86,7 @@ export async function readDisabledFolders(
 }
 
 /**
- * Write disabled folders to .vscode/folder.json
+ * Write disabled folders to .vscode/folder.jsonc
  * @param workspaceFolder - The workspace folder
  * @param folders - Array of disabled folder paths
  */
@@ -87,8 +104,12 @@ export async function writeDisabledFolders(
         // Folder might already exist, ignore error
     }
     
-    // Write the config file
-    const content = JSON.stringify(folders, null, 2);
+    // Write the config file with JSONC format (supports comments)
+    const jsonContent = JSON.stringify(folders, null, 2);
+    const content = `// List of disabled folders (relative to workspace root)
+// Folders in this list will not be opened when using "Open all files in directory"
+${jsonContent}
+`;
     const data = Buffer.from(content, 'utf-8');
     await vscode.workspace.fs.writeFile(configUri, data);
 }
