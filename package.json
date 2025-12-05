@@ -29,7 +29,8 @@
     ],
     "activationEvents": [
         "onCommand:vscode-open-files-in-directory.currentDirFiles",
-        "onCommand:vscode-open-files-in-directory.currentDirFilesRecursively"
+        "onCommand:vscode-open-files-in-directory.currentDirFilesRecursively",
+        "onCommand:vscode-open-files-in-directory.toggleFolderDisable"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -41,6 +42,18 @@
             {
                 "command": "vscode-open-files-in-directory.currentDirFilesRecursively",
                 "title": "Recursively open all files in directory"
+            },
+            {
+                "command": "vscode-open-files-in-directory.disableFolder",
+                "title": "Disable open folder"
+            },
+            {
+                "command": "vscode-open-files-in-directory.enableFolder",
+                "title": "Enable open folder"
+            },
+            {
+                "command": "vscode-open-files-in-directory.toggleFolderDisable",
+                "title": "Disable/Enable open folder"
             }
         ],
         "menus": {
@@ -50,6 +63,10 @@
                 },
                 {
                     "command": "vscode-open-files-in-directory.currentDirFilesRecursively"
+                },
+                {
+                    "command": "vscode-open-files-in-directory.toggleFolderDisable",
+                    "when": "explorerResourceIsFolder"
                 }
             ],
             "editor/title/context": [

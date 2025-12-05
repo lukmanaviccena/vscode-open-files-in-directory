@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { isFolderDisabled } from './FolderConfig';
 
 /**
  * Check if a directory should be excluded based on configuration
@@ -49,4 +50,13 @@ export function shouldProcessFile(
     
     // For files, check if extension should be excluded
     return !shouldExcludeExtension(fileName, excludeExtensions);
+}
+
+/**
+ * Check if a folder is disabled via workspace configuration
+ * @param uri - The folder URI to check
+ * @returns Promise that resolves to true if folder is disabled, false otherwise
+ */
+export async function checkFolderDisabled(uri: vscode.Uri): Promise<boolean> {
+    return await isFolderDisabled(uri);
 }

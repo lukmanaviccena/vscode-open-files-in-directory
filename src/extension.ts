@@ -19,6 +19,27 @@ export function activate(context: vscode.ExtensionContext) {
         ),
     );
 
+    subscriptions.push(
+        vscode.commands.registerCommand(
+            commands.createCommandName('disableFolder'),
+            commands.disableFolder,
+        ),
+    );
+
+    subscriptions.push(
+        vscode.commands.registerCommand(
+            commands.createCommandName('enableFolder'),
+            commands.enableFolder,
+        ),
+    );
+
+    subscriptions.push(
+        vscode.commands.registerCommand(
+            commands.createCommandName('toggleFolderDisable'),
+            commands.toggleFolderDisable,
+        ),
+    );
+
     // Add config change watcher
     subscriptions.push(
         vscode.workspace.onDidChangeConfiguration(e => {

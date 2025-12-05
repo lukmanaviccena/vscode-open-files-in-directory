@@ -7,7 +7,7 @@ import {
 } from '../types';
 import * as vscode from 'vscode';
 import { extensionName } from '../const';
-import { shouldProcessFile } from '../utils/FileFilter';
+import { shouldProcessFile, checkFolderDisabled } from '../utils/FileFilter';
 
 // Remove static config, we'll get it dynamically
 
@@ -17,6 +17,13 @@ export async function openAllFiles(
     depth = 0,
     fileCount = 0,
 ) {
+    // Check if this folder is disabled
+    const isDisabled = await checkFolderDisabled(uri);
+    if (isDisabled) {
+        console.log(`Skipping disabled folder: ${uri.fsPath}`);
+        return;
+    }
+
     // Get fresh config every time
     const config = vscode.workspace
         .getConfiguration()
@@ -56,7 +63,7 @@ const createOnReadDirectoryFulfilled = (
     depth = 0,
     fileCount = 0,
 ): ReadDirectoryFulfilled => {
-    return (files) => {
+    return async (files) => {
         // Get fresh config every time
         const config = vscode.workspace
             .getConfiguration()
@@ -72,7 +79,13 @@ const createOnReadDirectoryFulfilled = (
             }
 
             if (fileType === vscode.FileType.Directory && recursive) {
-                openAllFiles(filePath, true, ++depth, ++fileCount);
+                // Check if subfolder is disabled before recursive call
+                const isDisabled = await checkFolderDisabled(filePath);
+                if (!isDisabled) {
+                    openAllFiles(filePath, true, depth + 1, fileCount);
+                } else {
+                    console.log(`Skipping disabled folder: ${filePath.fsPath}`);
+                }
                 // avoid vscode.openTextDocument on directory
                 continue;
             }
